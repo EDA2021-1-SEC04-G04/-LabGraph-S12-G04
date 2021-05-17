@@ -23,7 +23,8 @@
  * Dario Correal
  *
  """
-
+import time
+import tracemalloc
 
 import sys
 import config
@@ -44,7 +45,7 @@ operación seleccionada.
 # ___________________________________________________
 
 
-servicefile = 'bus_routes_14000.csv'
+servicefile = 'bus_routes_150.csv'
 initialStation = None
 
 # ___________________________________________________
@@ -83,8 +84,9 @@ def optionThree(cont):
 
 
 def optionFour(cont, initialStation):
-    controller.minimumCostPaths(cont, initialStation)
-
+    x = controller.minimumCostPaths(cont, initialStation)
+    print("time = " + str(x[0]) + " y memoria = " + str(x[1]))
+    
 
 def optionFive(cont, destStation):
     haspath = controller.hasPath(cont, destStation)

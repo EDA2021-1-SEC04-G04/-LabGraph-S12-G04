@@ -27,7 +27,8 @@
 import config as cf
 from App import model
 import csv
-
+import tracemalloc
+import time
 """
 El controlador se encarga de mediar entre la vista y el modelo.
 Existen algunas operaciones en las que se necesita invocar
@@ -107,11 +108,27 @@ def connectedComponents(analyzer):
 
 
 def minimumCostPaths(analyzer, initialStation):
+    delta_time = -1.0
+    delta_memory = -1.0
+
+    tracemalloc.start()
+    start_time = getTime()
+    start_memory = getMemory()
+    
+    
+    operacion = model.minimumCostPaths(analyzer, initialStation)
+    stop_memory = getMemory()
+    stop_time = getTime()
+    tracemalloc.stop()
+
+    delta_time = stop_time - start_time
+    delta_memory = deltaMemory(start_memory, stop_memory)
+    tupla = (delta_time, delta_memory)
     """
     Calcula todos los caminos de costo minimo de initialStation a todas
     las otras estaciones del sistema
     """
-    return model.minimumCostPaths(analyzer, initialStation)
+    return delta_time,delta_memory
 
 
 def hasPath(analyzer, destStation):
@@ -134,3 +151,30 @@ def servedRoutes(analyzer):
     """
     maxvert, maxdeg = model.servedRoutes(analyzer)
     return maxvert, maxdeg
+#Funciones tiempo
+def getTime():
+    """
+    devuelve el instante tiempo de procesamiento en milisegundos
+    """
+    return float(time.perf_counter()*1000)
+
+def getMemory():
+    """
+    toma una muestra de la memoria alocada en instante de tiempo
+    """
+    return tracemalloc.take_snapshot()
+
+def deltaMemory(start_memory, stop_memory):
+    """
+    calcula la diferencia en memoria alocada del programa entre dos
+    instantes de tiempo y devuelve el resultado en bytes (ej.: 2100.0 B)
+    """
+    memory_diff = stop_memory.compare_to(start_memory, "filename")
+    delta_memory = 0.0
+
+    # suma de las diferencias en uso de memoria
+    for stat in memory_diff:
+        delta_memory = delta_memory + stat.size_diff
+    # de Byte -> kByte
+    delta_memory = delta_memory/1024.0
+    return delta_memory
